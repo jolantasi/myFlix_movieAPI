@@ -1,0 +1,2 @@
+ssh-keygen -t rsa -b 4096 -C "jolanta.germany@gmail.com"
+ssh-keygen -t rsa -b 4096 -C "jolanta.germany@gmail.com".pub
