@@ -32,10 +32,6 @@ app.get('/movies', (req, res) => {
   res.json(topMovies);
 });
 
-app.get('/error-test', (req, res) => {
-  throw new Error('🚨 Test error!');
-});
-
 // ✅ Error-handling middleware (must be last!)
 app.use((err, req, res, next) => {
   console.error(err.stack);
