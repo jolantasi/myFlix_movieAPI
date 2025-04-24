@@ -8,6 +8,238 @@
 </head>
 <body>
   <h1>myFlix API Documentation</h1>
-  <p>The Movies API is a server-side application that provides users with access to a database of movies, directors, and genres. This RESTful API allows users to sign up, update their personal information, and manage a list of their favorite movies. The API supports CRUD operations, enabling users to retrieve detailed movie information, explore different genres and directors, and personalize their movie lists. Built using Node.js and Express, the Movies API ensures secure authentication and efficient data handling to enhance the user experience.</p>
+  <p>
+    The Movies API is a server-side application that provides users with access to a database of movies, directors, and genres.
+    This RESTful API allows users to sign up, update their username, and manage a list of their favorite movies.
+    The API supports CRUD operations, enabling users to retrieve detailed movie information, explore different genres and directors, and personalize their movie lists.
+    Built using Node.js and Express, the Movies API ensures secure handling and efficient data management to enhance the user experience.
+  </p>
+
+  <h2>Endpoints</h2>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Request</th>
+        <th>URL</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>GET</td>
+        <td>/movies</td>
+        <td>Returns a list of all movies.</td>
+      </tr>
+      <tr>
+        <td>GET</td>
+        <td>/movies/:title</td>
+        <td>Returns data about a single movie (description, genre, director, image URL, featured).</td>
+      </tr>
+      <tr>
+        <td>GET</td>
+        <td>/genres/:genreName</td>
+        <td>Returns data about a genre (description).</td>
+      </tr>
+      <tr>
+        <td>GET</td>
+        <td>/directors/:directorName</td>
+        <td>Returns data about a director (bio, birth year).</td>
+      </tr>
+      <tr>
+        <td>POST</td>
+        <td>/users</td>
+        <td>Allows new users to register.</td>
+      </tr>
+      <tr>
+        <td>PUT</td>
+        <td>/users/:username</td>
+        <td>Allows users to update their username.</td>
+      </tr>
+      <tr>
+        <td>POST</td>
+        <td>/users/:username/movies/:movieTitle</td>
+        <td>Allows users to add a movie (by title) to their list of favorites.</td>
+      </tr>
+      <tr>
+        <td>DELETE</td>
+        <td>/users/:username/movies/:movieTitle</td>
+        <td>Allows users to remove a movie (by title) from their list of favorites.</td>
+      </tr>
+      <tr>
+        <td>DELETE</td>
+        <td>/users/:username</td>
+        <td>Allows existing users to deregister (user will be removed).</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Static Files</h2>
+  <p>
+    Static files (such as images and stylesheets) are served from the <code>/public</code> directory. For example:
+    <ul>
+      <li><code>/css/style.css</code></li>
+      <li><code>/images/filename.jpg</code></li>
+    </ul>
+  </p>
+
+  <h2>Technologies Used</h2>
+  <ul>
+    <li>Node.js</li>
+    <li>Express</li>
+    <li>Morgan (HTTP request logger)</li>
+  </ul>
+
+    <h2>1. Get All Movies</h2>
+    <p><strong>URL:</strong> <code>/movies</code></p>
+    <p><strong>Method:</strong> GET</p>
+    <p><strong>Description:</strong> Returns a list of all movies in the database.</p>
+    <p><strong>Query Parameters:</strong> None</p>
+    <p><strong>Response Example:</strong></p>
+    <pre>[
+    {
+      "title": "Inception",
+      "description": "A skilled thief is offered a chance to erase his criminal history.",
+      "genre": { "name": "Sci-Fi", "description": "Science fiction genre" },
+      "director": { "name": "Christopher Nolan", "bio": "British-American director..." }
+    },
+    ...
+  ]</pre>
+  
+    <h2>2. Get Movie by Title</h2>
+    <p><strong>URL:</strong> <code>/movies/:title</code></p>
+    <p><strong>Method:</strong> GET</p>
+    <p><strong>Description:</strong> Returns a single movie by title.</p>
+    <p><strong>Query Parameters:</strong></p>
+    <pre>
+  :title — Movie title (e.g., Inception)
+    </pre>
+    <p><strong>Response Example:</strong></p>
+    <pre>
+  {
+    "title": "Inception",
+    "description": "A skilled thief...",
+    "genre": { "name": "Sci-Fi", "description": "Science fiction genre" },
+    "director": { "name": "Christopher Nolan", "bio": "British-American director..." }
+  }
+    </pre>
+  
+    <h2>3. Get Genre Info</h2>
+    <p><strong>URL:</strong> <code>/genres/:genreName</code></p>
+    <p><strong>Method:</strong> GET</p>
+    <p><strong>Description:</strong> Returns details about a genre by name.</p>
+    <p><strong>Query Parameters:</strong></p>
+    <pre>
+  :genreName — Name of the genre (e.g., Sci-Fi)
+    </pre>
+    <p><strong>Response Example:</strong></p>
+    <pre>
+  {
+    "name": "Sci-Fi",
+    "description": "Science fiction genre"
+  }
+    </pre>
+  
+    <h2>4. Get Director Info</h2>
+    <p><strong>URL:</strong> <code>/directors/:directorName</code></p>
+    <p><strong>Method:</strong> GET</p>
+    <p><strong>Description:</strong> Returns details about a director by name.</p>
+    <p><strong>Query Parameters:</strong></p>
+    <pre>
+  :directorName — Name of the director (e.g., Christopher Nolan)
+    </pre>
+    <p><strong>Response Example:</strong></p>
+    <pre>
+  {
+    "name": "Christopher Nolan",
+    "bio": "British-American director...",
+    "birthYear": 1970
+  }
+    </pre>
+  
+    <h2>5. Register a New User</h2>
+    <p><strong>URL:</strong> <code>/users</code></p>
+    <p><strong>Method:</strong> POST</p>
+    <p><strong>Description:</strong> Registers a new user.</p>
+    <p><strong>Body Example:</strong></p>
+    <pre>
+  {
+    "username": "new_user"
+  }
+    </pre>
+    <p><strong>Response Example:</strong></p>
+    <pre>
+  {
+    "username": "new_user"
+  }
+    </pre>
+  
+    <h2>6. Update Username</h2>
+    <p><strong>URL:</strong> <code>/users/:username</code></p>
+    <p><strong>Method:</strong> PUT</p>
+    <p><strong>Description:</strong> Updates a user’s username.</p>
+    <p><strong>Query Parameters:</strong></p>
+    <pre>
+  :username — The current username
+    </pre>
+    <p><strong>Body Example:</strong></p>
+    <pre>
+  {
+    "username": "updated_user"
+  }
+    </pre>
+    <p><strong>Response Example:</strong></p>
+    <pre>
+  {
+    "username": "updated_user"
+  }
+    </pre>
+  
+    <h2>7. Add Movie to Favorites</h2>
+    <p><strong>URL:</strong> <code>/users/:username/movies/:title</code></p>
+    <p><strong>Method:</strong> POST</p>
+    <p><strong>Description:</strong> Adds a movie to the user's list of favorites.</p>
+    <p><strong>Query Parameters:</strong></p>
+    <pre>
+  :username — The user’s username
+  :title — The title of the movie
+    </pre>
+    <p><strong>Response Example:</strong></p>
+    <pre>
+  {
+    "username": "updated_user",
+    "favoriteMovies": ["Inception"]
+  }
+    </pre>
+  
+    <h2>8. Remove Movie from Favorites</h2>
+    <p><strong>URL:</strong> <code>/users/:username/movies/:title</code></p>
+    <p><strong>Method:</strong> DELETE</p>
+    <p><strong>Description:</strong> Removes a movie from the user's list of favorites.</p>
+    <p><strong>Query Parameters:</strong></p>
+    <pre>
+  :username — The user’s username
+  :title — The title of the movie
+    </pre>
+    <p><strong>Response Example:</strong></p>
+    <pre>
+  {
+    "username": "updated_user",
+    "favoriteMovies": []
+  }
+    </pre>
+  
+    <h2>9. Delete User</h2>
+    <p><strong>URL:</strong> <code>/users/:username</code></p>
+    <p><strong>Method:</strong> DELETE</p>
+    <p><strong>Description:</strong> Deletes a user account.</p>
+    <p><strong>Query Parameters:</strong></p>
+    <pre>
+  :username — The user’s username
+    </pre>
+    <p><strong>Response Example:</strong></p>
+    <pre>
+  { "message": "User deleted" }
+    </pre>
+  
 </body>
 </html>
