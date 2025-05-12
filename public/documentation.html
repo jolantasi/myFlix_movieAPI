@@ -240,6 +240,69 @@
     <pre>
   { "message": "User deleted" }
     </pre>
+
+    <h2>10. Get All Users</h2>
+    <p><strong>URL:</strong> <code>/users</code></p>
+    <p><strong>Method:</strong> GET</p>
+    <p><strong>Description:</strong> Returns a list of all users.</p>
+    <p><strong>Response Example:</strong></p>
+    <pre>
+[
+  { "username": "alice87" },
+  { "username": "bob92" },
+  ...
+]
+</pre>
+
+<h2>11. Get User Info</h2>
+<p><strong>URL:</strong> <code>/users/:username</code></p>
+<p><strong>Method:</strong> GET</p>
+<p><strong>Description:</strong> Returns detailed information about a specific user.</p>
+<p><strong>Query Parameters:</strong></p>
+<pre>
+:username — The user’s username
+</pre>
+<p><strong>Response Example:</strong></p>
+<pre>
+{
+  "username": "alice87",
+  "favoriteMovies": ["Inception", "Interstellar"]
+}
+</pre>
+
+<h2>12. Get Movies by Genre</h2>
+<p><strong>URL:</strong> <code>/movies/genre/:genreName</code></p>
+<p><strong>Method:</strong> GET</p>
+<p><strong>Description:</strong> Returns a list of movies in a particular genre.</p>
+<p><strong>Query Parameters:</strong></p>
+<pre>
+:genreName — Name of the genre (e.g., Sci-Fi)
+</pre>
+<p><strong>Response Example:</strong></p>
+<pre>
+[
+  { "title": "Inception", "genre": "Sci-Fi", "director": "Christopher Nolan" },
+  { "title": "The Matrix", "genre": "Sci-Fi", "director": "Wachowski Sisters" }
+]
+</pre>
+
+<h2>13. Get Movies by Director</h2>
+<p><strong>URL:</strong> <code>/movies/director/:directorName</code></p>
+<p><strong>Method:</strong> GET</p>
+<p><strong>Description:</strong> Returns a list of movies by a specific director.</p>
+<p><strong>Query Parameters:</strong></p>
+<pre>
+:directorName — Name of the director (e.g., Christopher Nolan)
+</pre>
+<p><strong>Response Example:</strong></p>
+<pre>
+[
+  { "title": "Inception", "director": "Christopher Nolan" },
+  { "title": "Interstellar", "director": "Christopher Nolan" }
+]
+</pre>
+
+
   
 </body>
 </html>
