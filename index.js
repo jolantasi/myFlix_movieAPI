@@ -2,60 +2,16 @@ const http = require('http');
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
+const mongoose = require('mongoose');
+
+const { Movie, User } = require('./models');
 
 app.use(express.json()); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public')); // Serve static files
 app.use(morgan('tiny')); // Log HTTP requests
 
-// In-memory movie data
-const movies = [
-  {
-    title: "Inception",
-    description: "A thief enters people’s dreams to steal secrets.",
-    genre: { name: "Sci-Fi", description: "Science fiction with futuristic elements" },
-    director: { name: "Christopher Nolan", bio: "British-American filmmaker", birthYear: 1970 },
-    imageUrl: "/images/inception.jpg",
-    featured: true
-  },
-  {
-    title: "The Matrix",
-    description: "A hacker discovers reality is a simulation.",
-    genre: { name: "Action", description: "High-paced action with sci-fi themes" },
-    director: { name: "Lana Wachowski", bio: "American director and writer", birthYear: 1965 },
-    imageUrl: "/images/matrix.jpg",
-    featured: true
-  },
-  {
-    title: "Pulp Fiction",
-    description: "Crime stories interwoven in Los Angeles.",
-    genre: { name: "Crime", description: "Crime and drama with nonlinear storytelling" },
-    director: { name: "Quentin Tarantino", bio: "American filmmaker known for stylized violence", birthYear: 1963 },
-    imageUrl: "/images/pulpfiction.jpg",
-    featured: false
-  },
-  {
-    title: "The Godfather",
-    description: "The story of a powerful mafia family.",
-    genre: { name: "Drama", description: "Classic crime drama about power and family" },
-    director: { name: "Francis Ford Coppola", bio: "American film director", birthYear: 1939 },
-    imageUrl: "/images/godfather.jpg",
-    featured: true
-  },
-  {
-    title: "Spirited Away",
-    description: "A young girl enters a magical world of spirits.",
-    genre: { name: "Fantasy", description: "Japanese animated fantasy adventure" },
-    director: { name: "Hayao Miyazaki", bio: "Famous Japanese animator and director", birthYear: 1941 },
-    imageUrl: "/images/spiritedaway.jpg",
-    featured: false
-  }
-];
-
-
-// In-memory user data (for example purposes)
-let users = [
-  { username: "john_doe", favorites: ["Inception"] }
-];
+mongoose.connect('mongodb://localhost:27017/mongodb-data', { useNewUrlParser: true, useUnifiedTopology: true });
 
 // --- ROUTES ---
 
@@ -64,77 +20,163 @@ app.get('/', (req, res) => {
   res.send('🎬 Welcome to my Movie API!');
 });
 
-// Return a list of ALL movies to the user
+// 1. Get all movies
 app.get('/movies', (req, res) => {
-  res.json(movies);
+  Movie.find()
+    .then((movies) => res.status(200).json(movies))
+    .catch((err) => res.status(500).send('Error: ' + err));
 });
 
-// Return ONE movie by title
+// 2. Get a movie by title
 app.get('/movies/:title', (req, res) => {
-  const movie = movies.find(m => m.title.toLowerCase() === req.params.title.toLowerCase());
-  if (movie) {
-    res.json(movie);
-  } else {
-    res.status(404).send('Movie not found');
-  }
+  Movie.findOne({ Title: req.params.title })
+    .then((movie) => {
+      if (movie) return res.json(movie);
+      res.status(404).send('Movie not found');
+    })
+    .catch((err) => res.status(500).send('Error: ' + err));
 });
 
-// Genre description by name
+// 3. Get genre description by genre name
 app.get('/genres/:genreName', (req, res) => {
-  const movie = movies.find(m => m.genre.name.toLowerCase() === req.params.genreName.toLowerCase());
-  if (movie) return res.json({ genre: movie.genre.name, description: movie.genre.description });
-  res.status(404).send('Genre not found');
+  Movie.findOne({ 'Genre.Name': new RegExp('^' + req.params.genreName + '$', 'i') })
+    .then((movie) => {
+      if (movie) {
+        return res.json({
+          Genre: movie.Genre.Name,
+          Description: movie.Genre.Description,
+        });
+      }
+      res.status(404).send('Genre not found');
+    })
+    .catch((err) => res.status(500).send('Error: ' + err));
 });
 
-// Director info by name
+// 4. Get director info by director name
 app.get('/directors/:directorName', (req, res) => {
-  const movie = movies.find(m => m.director.name.toLowerCase() === req.params.directorName.toLowerCase());
-  if (movie) return res.json(movie.director);
-  res.status(404).send('Director not found');
+  Movie.findOne({ 'Director.Name': new RegExp('^' + req.params.directorName + '$', 'i') })
+    .then((movie) => {
+      if (movie) return res.json(movie.Director);
+      res.status(404).send('Director not found');
+    })
+    .catch((err) => res.status(500).send('Error: ' + err));
 });
 
-// Register user
+// 5. Add a user
 app.post('/users', (req, res) => {
-  const { username } = req.body;
-  if (!username) return res.status(400).send('Username is required');
-  if (users.find(u => u.username === username)) return res.status(400).send('User already exists');
-  users.push({ username, favorites: [] });
-  res.send(`User ${username} registered successfully`);
+  User.findOne({ Username: req.body.Username })
+    .then((user) => {
+      if (user) return res.status(400).send(req.body.Username + ' already exists');
+      return User.create({
+        Username: req.body.Username,
+        Password: req.body.Password,
+        Email: req.body.Email,
+        Birthday: req.body.Birthday,
+      });
+    })
+    .then((newUser) => res.status(201).json(newUser))
+    .catch((err) => res.status(500).send('Error: ' + err));
 });
 
-// Update username
-app.put('/users/:username', (req, res) => {
-  const user = users.find(u => u.username === req.params.username);
-  if (!user) return res.status(404).send('User not found');
-  user.username = req.body.username || user.username;
-  res.send(`User updated to ${user.username}`);
+// 6. Update user info
+app.put('/users/:Username', (req, res) => {
+  User.findOneAndUpdate(
+    { Username: req.params.Username },
+    {
+      $set: {
+        Username: req.body.Username,
+        Password: req.body.Password,
+        Email: req.body.Email,
+        Birthday: req.body.Birthday,
+      },
+    },
+    { new: true }
+  )
+    .then((updatedUser) => res.json(updatedUser))
+    .catch((err) => res.status(500).send('Error: ' + err));
 });
 
-// Add favorite movie
-app.post('/users/:username/movies/:movieTitle', (req, res) => {
-  const user = users.find(u => u.username === req.params.username);
-  if (!user) return res.status(404).send('User not found');
-  if (!user.favorites.includes(req.params.movieTitle)) {
-    user.favorites.push(req.params.movieTitle);
-  }
-  res.send(`Movie "${req.params.movieTitle}" added to favorites`);
+// 7. Add a movie to user's favorites
+app.post('/users/:Username/movies/:MovieID', (req, res) => {
+  User.findOneAndUpdate(
+    { Username: req.params.Username },
+    { $addToSet: { FavoriteMovies: req.params.MovieID } },
+    { new: true }
+  )
+    .then((updatedUser) => res.json(updatedUser))
+    .catch((err) => res.status(500).send('Error: ' + err));
 });
 
-// Remove a movie from their list of favorites
-app.delete('/users/:username/movies/:movieTitle', (req, res) => {
-  const user = users.find(u => u.username === req.params.username);
-  if (!user) return res.status(404).send('User not found');
-  user.favorites = user.favorites.filter(title => title !== req.params.movieTitle);
-  res.send(`Movie "${req.params.movieTitle}" removed from favorites`);
+// 8. Remove a movie from user's favorites
+app.delete('/users/:Username/movies/:MovieID', (req, res) => {
+  User.findOneAndUpdate(
+    { Username: req.params.Username },
+    { $pull: { FavoriteMovies: req.params.MovieID } },
+    { new: true }
+  )
+    .then((updatedUser) => {
+      if (!updatedUser) return res.status(404).send('User not found');
+      res.json(updatedUser);
+    })
+    .catch((err) => res.status(500).send('Error: ' + err));
 });
 
-// Allow existing users to deregister (delete user)
-app.delete('/users/:username', (req, res) => {
-  users = users.filter(u => u.username !== req.params.username);
-  res.send(`User ${req.params.username} has been deregistered`);
+// 9. Delete a user by username
+app.delete('/users/:Username', (req, res) => {
+  User.findOneAndRemove({ Username: req.params.Username })
+    .then((user) => {
+      if (!user) return res.status(400).send(req.params.Username + ' was not found');
+      res.status(200).send(req.params.Username + ' was deleted.');
+    })
+    .catch((err) => res.status(500).send('Error: ' + err));
 });
 
-// Error-handling middleware (keep last)
+// 10. Get all users
+app.get('/users', (req, res) => {
+  User.find()
+    .then((users) => res.status(200).json(users))
+    .catch((err) => res.status(500).send('Error: ' + err));
+});
+
+// 11. Get a single user by username
+app.get('/users/:Username', (req, res) => {
+  User.findOne({ Username: req.params.Username })
+    .then((user) => {
+      if (user) return res.json(user);
+      res.status(404).send('User not found');
+    })
+    .catch((err) => res.status(500).send('Error: ' + err));
+});
+
+// 12. Get Movies by Genre
+app.get('/movies/genre/:genreName', (req, res) => {
+  const genreName = req.params.genreName;
+
+  Movie.find({ 'Genre.Name': new RegExp('^' + genreName + '$', 'i') })
+    .then((movies) => {
+      if (movies.length === 0) {
+        return res.status(404).json({ message: `No movies found in genre ${genreName}` });
+      }
+      res.json(movies);
+    })
+    .catch((err) => res.status(500).send('Error: ' + err));
+});
+
+// 13. Get Movies by Director
+app.get('/movies/director/:directorName', (req, res) => {
+  const directorName = req.params.directorName;
+
+  Movie.find({ 'Director.Name': new RegExp('^' + directorName + '$', 'i') })
+    .then((movies) => {
+      if (movies.length === 0) {
+        return res.status(404).json({ message: `No movies found for director ${directorName}` });
+      }
+      res.json(movies);
+    })
+    .catch((err) => res.status(500).send('Error: ' + err));
+});
+
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something went wrong! 😓');
@@ -144,4 +186,3 @@ app.use((err, req, res, next) => {
 http.createServer(app).listen(8080, () => {
   console.log('Server is running at http://localhost:8080');
 });
-
