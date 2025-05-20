@@ -11,7 +11,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public')); // Serve static files
 app.use(morgan('tiny')); // Log HTTP requests
 
-mongoose.connect('mongodb://localhost:27017/mongodb-data', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb://localhost:27017/mongodb_data', { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true 
+});
 
 // --- ROUTES ---
 
