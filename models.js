@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 // Movie Schema
 const movieSchema = new mongoose.Schema({
@@ -26,12 +27,19 @@ const userSchema = new mongoose.Schema({
   favoriteMovies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
 });
 
+// ✅ Hash password before saving user
+userSchema.statics.hashPassword = function(password) {
+  return bcrypt.hashSync(password, 10);
+};
+
+// ✅ Validate password (returns a Promise)
+userSchema.methods.validatePassword = function(password) {
+  return bcrypt.compare(password, this.password);
+};
+
 // Models
 const Movie = mongoose.model('Movie', movieSchema);
 const User = mongoose.model('User', userSchema);
 
 // Export models
 module.exports = { Movie, User };
-
-
-
