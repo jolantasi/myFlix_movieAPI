@@ -4,6 +4,7 @@ const app = express();
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const { check, validationResult } = require('express-validator');
 
 const { Movie, User } = require('./models');
 
@@ -16,7 +17,8 @@ mongoose.connect('mongodb://127.0.0.1:27017/mongodb_data', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
+const cors = require('cors');
+app.use(cors());
 let auth = require('./auth')(app);
 
 // --- ROUTES ---
@@ -90,45 +92,83 @@ app.get('/directors/:directorName', passport.authenticate('jwt', { session: fals
 });
 
 // 5. Add a user (registration)
-app.post('/users', (req, res) => {
-  User.findOne({ username: req.body.username })
-    .then(user => {
-      if (user) return res.status(400).send(req.body.username + ' already exists');
-      return User.create({
-        username: req.body.username,
-        password: User.hashPassword(req.body.password),
-        email: req.body.email,
-        Birthday: req.body.Birthday,
-      });
-    })
-    .then(newUser => res.status(201).json(newUser))
-    .catch(err => res.status(500).send('Error: ' + err));
+app.post('/users', [
+  check('username', 'Username is required and must be at least 5 characters long')
+    .isLength({ min: 5 }),
+  check('username', 'Username must contain only alphanumeric characters')
+    .isAlphanumeric(),
+  check('password', 'Password is required').not().isEmpty(),
+  check('email', 'Email does not appear to be valid')
+    .isEmail()
+], async (req, res) => {
+  // Check the validation result
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+
+  try {
+    const user = await User.findOne({ username: req.body.username });
+    if (user) {
+      return res.status(400).send(req.body.username + ' already exists');
+    }
+
+    const newUser = await User.create({
+      username: req.body.username,
+      password: hashedPassword,
+      email: req.body.email,
+      Birthday: req.body.Birthday
+    });
+
+    return res.status(201).json(newUser);
+  } catch (err) {
+    return res.status(500).send('Error: ' + err);
+  }
 });
 
-// 6. Update user info
-app.put('/users/:username', passport.authenticate('jwt', { session: false }), async (req, res) => {
-    // CONDITION TO CHECK ADDED HERE
-    if(req.user.username !== req.params.username){
-        return res.status(400).send('Permission denied');
-    }
-    // CONDITION ENDS
-    await User.findOneAndUpdate({ username: req.params.Username }, {
-        $set:
-        {
-            username: req.body.username,
-            password: req.body.password,
-            email: req.body.email,
-            Birthday: req.body.Birthday
-        }
-    },
-        { new: true }) // This line makes sure that the updated document is returned
-        .then((updatedUser) => {
-            res.json(updatedUser);
-        })
-        .catch((err) => {
-            console.log(err);
-            res.status(500).send('Error: ' + err);
-        })
+// 6. Update user
+app.put('/users/:username', [
+  passport.authenticate('jwt', { session: false }),
+  check('username', 'Username must be at least 5 characters long').optional().isLength({ min: 5 }),
+  check('username', 'Username must be alphanumeric').optional().isAlphanumeric(),
+  check('password', 'Password is required').optional().notEmpty(),
+  check('email', 'Email does not appear to be valid').optional().isEmail()
+], async (req, res) => {
+  // Check if the user is authorized
+  if (req.user.username !== req.params.username) {
+    return res.status(400).send('Permission denied');
+  }
+
+  // Handle validation results
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+  // Hash the new password if provided
+  let updateFields = {
+    username: req.body.username,
+    email: req.body.email,
+    Birthday: req.body.Birthday
+  };
+
+  if (req.body.password) {
+    updateFields.password = bcrypt.hashSync(req.body.password, 10);
+  }
+
+  try {
+    const updatedUser = await User.findOneAndUpdate(
+      { username: req.params.username },
+      { $set: updateFields },
+      { new: true }
+    );
+    res.json(updatedUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error: ' + err);
+  }
 });
 
 // 7. Add movie to user’s favorites
