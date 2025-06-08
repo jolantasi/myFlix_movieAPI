@@ -301,6 +301,6 @@ http.createServer(app).listen(8080, () => {
 });
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => {
-  console.log(`🚀 Movie API is listening on port ${port}`);
+app.listen(port, '0.0.0.0',() => {
+ console.log('Listening on Port ' + port);
 });
