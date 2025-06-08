@@ -8,6 +8,9 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const { check, validationResult } = require('express-validator');
 
+const authRouter = require('./auth')(express.Router());
+app.use('/', authRouter);
+
 const { Movie, User } = require('./models');
 
 app.use(express.json());
