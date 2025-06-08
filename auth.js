@@ -33,4 +33,5 @@ module.exports = (router) => {
       });
     })(req, res);
   });
-}
+  return router; // VERY important!
+};
