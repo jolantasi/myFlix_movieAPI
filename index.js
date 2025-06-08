@@ -14,13 +14,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(morgan('tiny'));
 
-mongoose.connect(process.env.CONNECTION_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-const cors = require('cors');
-app.use(cors());
-let auth = require('./auth')(app);
+mongoose.connect(process.env.CONNECTION_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // --- ROUTES ---
 
