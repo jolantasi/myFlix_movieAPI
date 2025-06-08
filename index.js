@@ -1,3 +1,4 @@
+require('dotenv').config();
 const http = require('http');
 const express = require('express');
 const app = express();
@@ -13,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(morgan('tiny'));
 
-mongoose.connect('mongodb://127.0.0.1:27017/mongodb_data', {
+mongoose.connect(process.env.CONNECTION_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -296,10 +297,6 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-http.createServer(app).listen(8080, () => {
-  console.log('Server is running at http://localhost:8080');
-});
-
 const port = process.env.PORT || 8080;
 app.listen(port, '0.0.0.0',() => {
  console.log('Listening on Port ' + port);
