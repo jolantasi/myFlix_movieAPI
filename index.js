@@ -1,22 +1,29 @@
 require('dotenv').config();
-const bcrypt = require('bcrypt');
-const http = require('http');
 const express = require('express');
 const app = express();
+const bcrypt = require('bcrypt');
+const http = require('http');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const { check, validationResult } = require('express-validator');
 
-const authRouter = require('./auth')(express.Router());
-app.use('/', authRouter);
+// Initialize passport strategies BEFORE using routes
+require('./passport'); // Local and JWT strategies
 
-const { Movie, User } = require('./models');
-
+// Middleware setup
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(morgan('tiny'));
+app.use(passport.initialize()); // ✅ Must be after express.json but before any protected routes
+
+// Import models
+const { Movie, User } = require('./models');
+
+// Setup auth routes
+const authRouter = require('./auth')(express.Router());
+app.use('/', authRouter);
 
 mongoose.connect(process.env.CONNECTION_URI)
   .then(() => console.log('MongoDB connected'))
