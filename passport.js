@@ -15,8 +15,8 @@ passport.use(
     },
     async (username, password, callback) => {
       try {
-        console.log(`${username} ${password}`);
         const user = await Users.findOne({ username: username });
+
         if (!user) {
           console.log('Incorrect username');
           return callback(null, false, {
@@ -24,7 +24,9 @@ passport.use(
           });
         }
 
-        const isValid = await user.validatePassword(password);
+        // ✅ Try sync compare to avoid async/callback mismatch
+        const isValid = bcrypt.compareSync(password, user.password);
+
         if (!isValid) {
           console.log('Incorrect password');
           return callback(null, false, {
@@ -41,7 +43,6 @@ passport.use(
     }
   )
 );
-
 
 passport.use(new JWTStrategy({
   jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
