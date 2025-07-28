@@ -36,10 +36,10 @@ app.get('/', (req, res) => {
 });
 
 // 1. Get all movies
-app.get('/movies', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  await Movie.find()
+app.get('/movies', (req, res) => {
+  Movie.find()
     .then((movies) => {
-      res.status(201).json(movies);
+      res.status(200).json(movies);
     })
     .catch((error) => {
       console.error(error);
