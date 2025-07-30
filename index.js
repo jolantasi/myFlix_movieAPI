@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const bcrypt = require('bcrypt');
 const http = require('http');
 const morgan = require('morgan');
@@ -17,6 +18,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(morgan('tiny'));
 app.use(passport.initialize()); // ✅ Must be after express.json but before any protected routes
+// Allow all origins temporarily (for development only)
+app.use(cors());
 
 // Import models
 const { Movie, User } = require('./models');
