@@ -38,8 +38,8 @@ app.get('/', (req, res) => {
   res.send('🎬 Welcome to my Movie API!');
 });
 
-// 1. Get all movies
-app.get('/movies', (req, res) => {
+// 1. Get all movies (JWT protected)
+app.get('/movies', passport.authenticate('jwt', { session: false }), (req, res) => {
   Movie.find()
     .then((movies) => {
       res.status(200).json(movies);
