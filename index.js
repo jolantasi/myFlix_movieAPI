@@ -19,7 +19,12 @@ app.use(express.static('public'));
 app.use(morgan('tiny'));
 app.use(passport.initialize()); // ✅ Must be after express.json but before any protected routes
 // Allow all origins temporarily (for development only)
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:1234",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
 
 // Import models
 const { Movie, User } = require('./models');
