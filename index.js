@@ -149,7 +149,7 @@ app.put('/users/:username', [
   passport.authenticate('jwt', { session: false }),
   check('username', 'Username must be at least 5 characters long').optional().isLength({ min: 5 }),
   check('username', 'Username must be alphanumeric').optional().isAlphanumeric(),
-  check('password', 'Password is required').optional().notEmpty(),
+  check('password').optional().isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),  
   check('email', 'Email does not appear to be valid').optional().isEmail()
 ], async (req, res) => {
   // Check if the user is authorized
