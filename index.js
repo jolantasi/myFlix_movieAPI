@@ -20,7 +20,11 @@ app.use(morgan('tiny'));
 app.use(passport.initialize()); // ✅ Must be after express.json but before any protected routes
 // Allow all origins temporarily (for development only)
 app.use(cors({
-  origin: ["http://localhost:1234", "https://myflixy.netlify.app"],
+  origin: [
+    "http://localhost:1234", 
+    "http://localhost:4200",
+    "https://myflixy.netlify.app"
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
