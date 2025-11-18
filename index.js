@@ -24,6 +24,7 @@ app.use(cors({
     "http://localhost:1234", 
     "http://localhost:4200",
     "https://myflixy.netlify.app"
+    'https://jolantasi.github.io'
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
