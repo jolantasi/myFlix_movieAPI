@@ -1,0 +1,12 @@
+{
+  "source": {
+    "include": ["index.js", "auth.js", "models.js", "passport.js"],
+    "includePattern": ".js$",
+    "excludePattern": "(node_modules|public|Postman|log\\.txt)"
+  },
+  "opts": {
+    "destination": "./out",
+    "recurse": true,
+    "template": "templates/default"
+  }
+}

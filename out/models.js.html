@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+
+/**
+ * @file models.js
+ * @description Mongoose data models for the myFlix API, including Movie and User schemas.
+ * Defines data structures used throughout the database.
+ */
+
+/**
+ * Movie schema defining movie details, genre, director, and associated properties.
+ *
+ * @typedef Movie
+ * @property {string} title.required - Movie title
+ * @property {string} description.required - Movie description
+ * @property {Object} genre - Genre information
+ * @property {string} genre.name - Genre name
+ * @property {string} genre.description - Genre description
+ * @property {Object} director - Director information
+ * @property {string} director.name - Director name
+ * @property {string} director.bio - Director biography
+ * @property {Array.&lt;string>} actors - List of actors appearing in the movie
+ * @property {string} imageUrl - URL to movie poster image
+ * @property {boolean} isFeatured - Whether the movie is featured
+ */
+const movieSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  genre: {
+    name: String,
+    description: String,
+  },
+  director: {
+    name: String,
+    bio: String,
+  },
+  actors: [String],
+  imageUrl: String,
+  isFeatured: Boolean,
+});
+
+/**
+ * User schema defining user account information and stored favorite movies.
+ *
+ * @typedef User
+ * @property {string} username.required - Unique username
+ * @property {string} password.required - Hashed user password
+ * @property {string} email.required - User email address
+ * @property {Date} Birthday - User birthday
+ * @property {Array.&lt;Movie>} favoriteMovies - List of user's favorite movies (ObjectId references)
+ */
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  password: { type: String, required: true },
+  email: { type: String, required: true },
+  Birthday: Date,
+  favoriteMovies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
+});
+
+/**
+ * Hash a password before saving a user.
+ *
+ * @function
+ * @name hashPassword
+ * @memberof User
+ * @param {string} password - Plain text password
+ * @returns {string} Hashed password
+ */
+userSchema.statics.hashPassword = function (password) {
+  return bcrypt.hashSync(password, 10);
+};
+
+/**
+ * Validate a user's password by comparing it to the stored hash.
+ *
+ * @function
+ * @name validatePassword
+ * @memberof User
+ * @instance
+ * @param {string} password - Plain text password
+ * @returns {Promise&lt;boolean>} Whether the password is valid
+ */
+userSchema.methods.validatePassword = function (password) {
+  return bcrypt.compare(password, this.password);
+};
+
+// Create models
+const Movie = mongoose.model('Movie', movieSchema);
+const User = mongoose.model('User', userSchema);
+
+/**
+ * Export Movie and User models for use across the application.
+ * @module models
+ */
+module.exports = { Movie, User };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-auth.html">auth</a></li><li><a href="module-models.html">models</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AddFavoriteMovie">AddFavoriteMovie</a></li><li><a href="global.html#DeleteUser">DeleteUser</a></li><li><a href="global.html#ErrorHandler">ErrorHandler</a></li><li><a href="global.html#GetAllMovies">GetAllMovies</a></li><li><a href="global.html#GetDirectorByName">GetDirectorByName</a></li><li><a href="global.html#GetGenreByName">GetGenreByName</a></li><li><a href="global.html#GetMovieByTitle">GetMovieByTitle</a></li><li><a href="global.html#GetMoviesByDirector">GetMoviesByDirector</a></li><li><a href="global.html#GetMoviesByGenre">GetMoviesByGenre</a></li><li><a href="global.html#GetRoot">GetRoot</a></li><li><a href="global.html#GetUserByUsername">GetUserByUsername</a></li><li><a href="global.html#RegisterUser">RegisterUser</a></li><li><a href="global.html#RemoveFavoriteMovie">RemoveFavoriteMovie</a></li><li><a href="global.html#UpdateUser">UpdateUser</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#generateJWTToken">generateJWTToken</a></li><li><a href="global.html#startServer">startServer</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Nov 20 2025 16:35:21 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

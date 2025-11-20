@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: passport.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: passport.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file passport.js
+ * @description Configures authentication strategies for the myFlix API using Passport.
+ * Provides:
+ *  - LocalStrategy: validates username + password on login
+ *  - JWTStrategy: authorizes users based on JSON Web Tokens
+ */
+
+const bcrypt = require('bcrypt');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const Models = require('./models.js');
+const passportJWT = require('passport-jwt');
+
+let Users = Models.User;
+let JWTStrategy = passportJWT.Strategy;
+let ExtractJWT = passportJWT.ExtractJwt;
+
+/**
+ * LocalStrategy
+ * Validates a username + password combination during login.
+ *
+ * @name LocalStrategy
+ * @memberof module:passport
+ * @function
+ * @param {string} usernameField - The username field in the request (defaults to "username")
+ * @param {string} passwordField - The password field in the request (defaults to "password")
+ * @returns {Object} Authenticated user object or error message
+ *
+ * @description
+ * - Looks up user by username  
+ * - Compares provided password with hashed password in DB  
+ * - Returns user if credentials are correct  
+ */
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: 'username',
+      passwordField: 'password',
+    },
+    async (username, password, callback) => {
+      try {
+        const user = await Users.findOne({ username: username });
+
+        if (!user) {
+          console.log('Incorrect username');
+          return callback(null, false, {
+            message: 'Incorrect username.',
+          });
+        }
+
+        // Validate password
+        const isValid = bcrypt.compareSync(password, user.password);
+
+        if (!isValid) {
+          console.log('Incorrect password');
+          return callback(null, false, {
+            message: 'Incorrect password.',
+          });
+        }
+
+        console.log('Login successful');
+        return callback(null, user);
+      } catch (error) {
+        console.log(error);
+        return callback(error);
+      }
+    }
+  )
+);
+
+/**
+ * JWTStrategy
+ * Authenticates users based on a JSON Web Token passed in the Authorization header.
+ *
+ * @name JWTStrategy
+ * @memberof module:passport
+ * @function
+ * @param {Object} jwtPayload - Decoded JWT payload containing user data
+ * @param {string} jwtPayload._id - ID of the authenticated user
+ * @returns {Object} Authenticated user or error message
+ *
+ * @description
+ * - Extracts JWT from the "Authorization: Bearer &lt;token>" header  
+ * - Validates the token using the secret key  
+ * - Retrieves the user associated with the token payload  
+ */
+passport.use(
+  new JWTStrategy(
+    {
+      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+      secretOrKey: 'your_jwt_secret',
+    },
+    async (jwtPayload, callback) => {
+      return await Users.findById(jwtPayload._id)
+        .then((user) => {
+          return callback(null, user);
+        })
+        .catch((error) => {
+          return callback(error);
+        });
+    }
+  )
+);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-auth.html">auth</a></li><li><a href="module-models.html">models</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AddFavoriteMovie">AddFavoriteMovie</a></li><li><a href="global.html#DeleteUser">DeleteUser</a></li><li><a href="global.html#ErrorHandler">ErrorHandler</a></li><li><a href="global.html#GetAllMovies">GetAllMovies</a></li><li><a href="global.html#GetDirectorByName">GetDirectorByName</a></li><li><a href="global.html#GetGenreByName">GetGenreByName</a></li><li><a href="global.html#GetMovieByTitle">GetMovieByTitle</a></li><li><a href="global.html#GetMoviesByDirector">GetMoviesByDirector</a></li><li><a href="global.html#GetMoviesByGenre">GetMoviesByGenre</a></li><li><a href="global.html#GetRoot">GetRoot</a></li><li><a href="global.html#GetUserByUsername">GetUserByUsername</a></li><li><a href="global.html#RegisterUser">RegisterUser</a></li><li><a href="global.html#RemoveFavoriteMovie">RemoveFavoriteMovie</a></li><li><a href="global.html#UpdateUser">UpdateUser</a></li><li><a href="global.html#connectToDatabase">connectToDatabase</a></li><li><a href="global.html#generateJWTToken">generateJWTToken</a></li><li><a href="global.html#startServer">startServer</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu Nov 20 2025 16:35:21 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
